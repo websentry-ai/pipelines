@@ -7,7 +7,7 @@ ARG USE_CUDA_VER
 
 ## Basis ##
 ENV ENV=prod \
-    PORT=9099 \
+    PORT=8080 \
     # pass build args to the build
     MINIMUM_BUILD=${MINIMUM_BUILD} \
     USE_CUDA_DOCKER=${USE_CUDA} \
@@ -44,6 +44,6 @@ COPY . .
 
 # Expose the port
 ENV HOST="0.0.0.0"
-ENV PORT="9099"
+ENV PORT="8080"
 
 ENTRYPOINT [ "bash", "start.sh" ]

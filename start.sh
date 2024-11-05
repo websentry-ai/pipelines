@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-PORT="${PORT:-9099}"
+PORT="${PORT:-8080}"
 HOST="${HOST:-0.0.0.0}"
 # Default value for PIPELINES_DIR
 PIPELINES_DIR=${PIPELINES_DIR:-./pipelines}

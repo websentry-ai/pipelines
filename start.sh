@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+
+set -e  # Exit on error
+
+# Logging function
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
+}
+
+log "Starting server with HOST=$HOST and PORT=$PORT"
+
 PORT="${PORT:-8080}"
 HOST="${HOST:-0.0.0.0}"
 # Default value for PIPELINES_DIR
@@ -127,7 +137,14 @@ else
   echo "PIPELINES_URLS not specified. Skipping pipelines download and installation."
 fi
 
-
-
 # Start the server
-uvicorn main:app --host "$HOST" --port "$PORT" --forwarded-allow-ips '*'
+log "Starting uvicorn server..."
+if ! uvicorn main:app \
+    --host "$HOST" \
+    --port "$PORT" \
+    --forwarded-allow-ips '*' \
+    --timeout-keep-alive 75 \
+    --log-level info; then
+    log "ERROR: Failed to start uvicorn server"
+    exit 1
+fi

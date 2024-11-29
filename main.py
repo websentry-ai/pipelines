@@ -5,7 +5,7 @@ from fastapi.concurrency import run_in_threadpool
 
 from starlette.responses import StreamingResponse, Response
 from pydantic import BaseModel, ConfigDict
-from typing import List, Union, Generator, Iterator
+from typing import List, Union, Generator, Iterator, Optional
 
 
 from utils.pipelines.auth import bearer_security, get_current_user
@@ -781,3 +781,53 @@ async def generate_openai_chat_completion(form_data: OpenAIChatCompletionForm):
                 }
 
     return await run_in_threadpool(job)
+
+class PerformFiltersRequest(BaseModel):
+    enabled_filters: List[str]
+    body: dict
+
+@app.post("/v1/perform_filters")
+@app.post("/perform_filters")
+async def perform_filters(request: PerformFiltersRequest):
+    """
+    Performs enabled filters on the message body
+    """
+    try:
+        modified_body = request.body
+        
+        # Map of filter names to their pipeline IDs
+        filter_map = {
+            "NSFW Filter": "nsfw_filter_pipeline"
+        }
+        
+        for filter_name in request.enabled_filters:
+            if filter_name not in filter_map:
+                continue
+                
+            pipeline_id = filter_map[filter_name]
+            
+            if pipeline_id not in app.state.PIPELINES:
+                continue
+                
+            pipeline = PIPELINE_MODULES[pipeline_id]
+            
+            if hasattr(pipeline, "inlet"):
+                try:
+                    modified_body = await pipeline.inlet(modified_body, None)
+                except Exception as e:
+                    return {
+                        "status": "error",
+                        "filter": filter_name,
+                        "message": str(e)
+                    }
+        
+        return {
+            "status": "success",
+            "body": modified_body
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Error processing filters: {str(e)}"
+        }

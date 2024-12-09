@@ -41,11 +41,10 @@ class Pipeline:
 
         with open(csv_path, 'r', encoding='utf-8') as file:
             import csv
-            reader = csv.reader(file)
-            next(reader)
+            reader = csv.DictReader(file)
             for row in reader:
-                if row:
-                    self.jailbreak_patterns.append(row[0])
+                if row and row.get('prompt'):
+                    self.jailbreak_patterns.append(row['prompt'])
         
         # Generate embeddings for known jailbreak patterns
         self.jailbreak_embeddings = self.model.encode(self.jailbreak_patterns)

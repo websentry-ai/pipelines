@@ -797,8 +797,7 @@ async def perform_filters(request: PerformFiltersRequest):
         
         # Map of filter names to their pipeline IDs
         filter_map = {
-            "NSFW Filter": "nsfw_filter_pipeline",
-            "Jailbreak Filter": "jailbreak_filter_pipeline"
+            "NSFW Filter": "nsfw_filter_pipeline"
         }
         
         for filter_name in request.enabled_filters:

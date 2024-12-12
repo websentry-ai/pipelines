@@ -793,13 +793,12 @@ async def perform_filters(request: PerformFiltersRequest):
     Performs enabled filters on the message body
     """
     try:
-        modified_body = request.body
-        
         # Map of filter names to their pipeline IDs
         filter_map = {
-            "NSFW Filter": "nsfw_filter_pipeline"
+            "NSFW Filter": "nsfw_filter_pipeline",
+            "Restrict to Topic": "restrict_to_topic_pipeline"
         }
-        
+
         for filter_name in request.enabled_filters:
             if filter_name not in filter_map:
                 continue
@@ -813,7 +812,7 @@ async def perform_filters(request: PerformFiltersRequest):
             
             if hasattr(pipeline, "inlet"):
                 try:
-                    modified_body = await pipeline.inlet(modified_body, None)
+                    modified_body = await pipeline.inlet(request, None)
                 except Exception as e:
                     return {
                         "status": "error",

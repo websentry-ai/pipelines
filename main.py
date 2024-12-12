@@ -784,6 +784,7 @@ async def generate_openai_chat_completion(form_data: OpenAIChatCompletionForm):
 
 class PerformFiltersRequest(BaseModel):
     enabled_filters: List[str]
+    restrict_to_topic: Optional[List[str]] = []
     body: dict
 
 @app.post("/v1/perform_filters")
@@ -822,7 +823,7 @@ async def perform_filters(request: PerformFiltersRequest):
         
         return {
             "status": "success",
-            "body": modified_body
+            "body": request.body
         }
         
     except Exception as e:

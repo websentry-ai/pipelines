@@ -33,19 +33,19 @@ class Pipeline:
     async def on_valves_updated(self):
         pass
 
-    async def inlet(self, response: dict, user: Optional[dict] = None) -> dict:
+    async def inlet(self, request: dict, user: Optional[dict] = None) -> dict:
         print(f"inlet: {__name__}")
 
-        topics = getattr(response, "restrict_to_topic", [])
+        topics = getattr(request, "restrict_to_topic", [])
 
         if not topics:
-            return response
+            return request
 
-        user_message = response.body.text or None
+        user_message = request.body.get("text", "")
 
         if user_message:
             if not user_message.strip():
-                return response
+                return request
 
             result = self.classifier(
                 user_message,
@@ -60,7 +60,8 @@ class Pipeline:
                     "Message is not related to any of the configured topics."
                 )
 
-        return response
+        return request
 
-    async def outlet(self, response: dict, user: Optional[dict] = None) -> dict:
-        return response
+    async def outlet(self, request: dict, user: Optional[dict] = None) -> dict:
+        return request
+

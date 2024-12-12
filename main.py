@@ -784,6 +784,7 @@ async def generate_openai_chat_completion(form_data: OpenAIChatCompletionForm):
 
 class PerformFiltersRequest(BaseModel):
     enabled_filters: List[str]
+    regex_filters: Optional[List[str]] = []
     body: dict
 
 @app.post("/v1/perform_filters")
@@ -793,8 +794,6 @@ async def perform_filters(request: PerformFiltersRequest):
     Performs enabled filters on the message body
     """
     try:
-        modified_body = request.body
-        
         # Map of filter names to their pipeline IDs
         filter_map = {
             "NSFW Filter": "nsfw_filter_pipeline",
@@ -806,15 +805,15 @@ async def perform_filters(request: PerformFiltersRequest):
                 continue
                 
             pipeline_id = filter_map[filter_name]
-            
+
             if pipeline_id not in app.state.PIPELINES:
                 continue
-                
+
             pipeline = PIPELINE_MODULES[pipeline_id]
             
             if hasattr(pipeline, "inlet"):
                 try:
-                    modified_body = await pipeline.inlet(modified_body, None)
+                    modified_body = await pipeline.inlet(request, None)
                 except Exception as e:
                     return {
                         "status": "error",
@@ -824,7 +823,7 @@ async def perform_filters(request: PerformFiltersRequest):
         
         return {
             "status": "success",
-            "body": modified_body
+            "body": request.body
         }
         
     except Exception as e:

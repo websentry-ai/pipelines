@@ -33,28 +33,31 @@ class Pipeline:
         
         for pattern in self.valves.patterns:
             try:
-                processed_pattern = pattern.replace('\\\\', '\\')
+                processed_pattern = pattern.encode().decode('unicode-escape')
                 self.compiled_patterns.append(re.compile(processed_pattern, flags))
             except re.error as e:
                 print(f"Invalid regex pattern '{pattern}': {e}")
 
-    async def inlet(self, body: dict, user: Optional[dict] = None) -> dict:
+    async def inlet(self, request: dict, user: Optional[dict] = None) -> dict:
         print(f"inlet: {__name__}")
+        body = request.body
 
-        regex_filters = body.get("regex_filters", [])
+        regex_filters = getattr(request, "regex_filters", [])
         if not regex_filters:
             return body
 
+        self.valves.patterns = regex_filters
+        self._compile_patterns()
+
         messages = body.get("messages", [])
-        
+
         for message in reversed(messages):
             if message.get("role") == "user":
                 content = message.get("content", "")
-                
                 for pattern in self.compiled_patterns:
                     if pattern.search(content):
                         raise Exception(f"Message matches blocked pattern: {pattern.pattern}")
-                
+
                 break
 
         return body

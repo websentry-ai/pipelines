@@ -800,7 +800,8 @@ async def perform_filters(request: PerformFiltersRequest):
             "Ban List": "ban_list_pipeline",
             "Restrict to Topic": "restrict_to_topic_pipeline",
             "Regex Match": "regex_filter_pipeline",
-            "Jailbreak Detection": "jailbreak_filter_pipeline"
+            "Jailbreak Detection": "jailbreak_filter_pipeline",
+            "Bias Check": "bias_check_pipeline"
         }
 
         for filter_name in request.enabled_filters:

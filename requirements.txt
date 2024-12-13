@@ -65,4 +65,6 @@ beautifulsoup4
 llama-index
 llama-index-llms-ollama
 
+tf-keras
+tensorflow
 fuzzysearch

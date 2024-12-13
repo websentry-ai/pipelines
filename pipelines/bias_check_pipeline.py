@@ -37,9 +37,10 @@ class Pipeline:
     async def on_valves_updated(self):
         pass
 
-    async def inlet(self, body: dict, user: Optional[dict] = None) -> dict:
+    async def inlet(self, request: dict, user: Optional[dict] = None) -> dict:
         print(f"inlet: {__name__}")
 
+        body = request.body
         messages = body.get("messages", [])
 
         user_message = None

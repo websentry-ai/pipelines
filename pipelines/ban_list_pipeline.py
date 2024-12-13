@@ -1,3 +1,13 @@
+"""
+title: Ban List Pipeline
+author: unbound
+date: 2024-12-13
+version: 1.0
+license: MIT
+description: A pipeline for filtering out banned words or similar variations.
+requirements: fuzzysearch
+"""
+
 from typing import List, Optional
 from pydantic import BaseModel
 from fuzzysearch import find_near_matches

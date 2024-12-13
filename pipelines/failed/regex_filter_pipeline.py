@@ -1,7 +1,16 @@
+"""
+title: Regex Filter Pipeline
+author: unbound
+date: 2024-12-13
+version: 1.0
+license: MIT
+description: A pipeline for filtering out messages based on regex patterns.
+requirements: re
+"""
+
 from typing import List, Optional
 from pydantic import BaseModel
 import re
-
 
 class Pipeline:
     class Valves(BaseModel):

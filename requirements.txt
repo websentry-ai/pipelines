@@ -67,3 +67,4 @@ llama-index-llms-ollama
 
 tf-keras
 tensorflow
+fuzzysearch

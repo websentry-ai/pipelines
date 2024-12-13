@@ -69,8 +69,9 @@ class Pipeline:
         # Additional checks or modifications can be added here
         return body
 
-    async def outlet(self, body: dict, user: Optional[dict] = None) -> dict:
+    async def outlet(self, request: dict, user: Optional[dict] = None) -> dict:
         try:
+            body = request.body
             messages = body.get("messages", [])
             model = body.get("model", self.valves.AI_MODEL_NAME)
             functionality = self.valves.FUNCTIONALITY

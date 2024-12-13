@@ -36,19 +36,22 @@ class Pipeline:
     async def inlet(self, request: dict, user: Optional[dict] = None) -> dict:
         print(f"inlet: {__name__}")
 
-        topics = getattr(request, "restrict_to_topic", [])
+        body = request.body
+        config = request.config
+
+        topics = config.get("restrict_to_topic", [])
 
         if not topics:
             return request
 
-        user_message = request.body.get("text", "")
+        message = body.get("text", "")
 
-        if user_message:
-            if not user_message.strip():
+        if message:
+            if not message.strip():
                 return request
 
             result = self.classifier(
-                user_message,
+                message,
                 candidate_labels=topics,
                 multi_label=True
             )

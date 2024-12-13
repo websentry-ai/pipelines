@@ -52,13 +52,14 @@ class Pipeline:
         # This function is called when the valves are updated.
         pass
 
-    async def inlet(self, body: dict, user: Optional[dict] = None) -> dict:
+    async def inlet(self, request: dict, user: Optional[dict] = None) -> dict:
         # No changes needed in the inlet; pass the body as is.
-        return body
+        return request
 
-    async def outlet(self, body: dict, user: Optional[dict] = None) -> dict:
+    async def outlet(self, request: dict, user: Optional[dict] = None) -> dict:
         print(f"outlet: {__name__}")
 
+        body = request.body
         messages = body.get("messages", [])
 
         user_message = None

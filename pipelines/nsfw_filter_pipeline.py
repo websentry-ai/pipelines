@@ -18,7 +18,7 @@ class Pipeline:
     class Valves(BaseModel):
         pipelines: List[str] = ["*"]  # Connect to all pipelines by default
         priority: int = 0
-        threshold: float = 0.8
+        threshold: float = 0.9
         validation_method: str = "sentence"
 
     def __init__(self):

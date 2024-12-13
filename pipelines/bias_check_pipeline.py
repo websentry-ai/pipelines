@@ -1,3 +1,13 @@
+"""
+title: Bias Check Pipeline
+author: unbound
+date: 2024-12-13
+version: 1.0
+license: MIT
+description: A pipeline for checking if the content is biased.
+requirements: transformers
+"""
+
 from typing import List, Optional
 from pydantic import BaseModel
 from transformers import AutoTokenizer, TFAutoModelForSequenceClassification, pipeline

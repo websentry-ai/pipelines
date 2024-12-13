@@ -1,7 +1,16 @@
+"""
+title: Restrict to Topic Filter
+author: unbound
+date: 2024-12-13
+version: 1.0
+license: MIT
+description: A pipeline for filtering out messages based on topic.
+requirements: transformers
+"""
+
 from typing import List, Optional
 from pydantic import BaseModel
 from transformers import pipeline
-
 
 class Pipeline:
     class Valves(BaseModel):

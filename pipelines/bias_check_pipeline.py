@@ -79,7 +79,7 @@ class Pipeline:
             is_biased = result["label"] == "LABEL_1"
 
             if is_biased and bias_score > self.valves.threshold:
-                warning_prefix = "⚠️ **Bias Warning:** This response may contain biased content.\n\n"
+                warning_prefix = "The response may contain biased content."
                 assistant_message["content"] = warning_prefix + content
                 body["messages"] = messages
 

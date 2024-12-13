@@ -59,9 +59,10 @@ class Pipeline:
         
         return np.max(similarities)
 
-    async def inlet(self, body: dict, user: Optional[dict] = None) -> dict:
+    async def inlet(self, request: dict, user: Optional[dict] = None) -> dict:
         print(f"inlet: {__name__}")
 
+        body = request.body
         messages = body.get("messages", [])
         
         for message in reversed(messages):
@@ -75,5 +76,5 @@ class Pipeline:
 
         return body
 
-    async def outlet(self, body: dict, user: Optional[dict] = None) -> dict:
-        return body
+    async def outlet(self, request: dict, user: Optional[dict] = None) -> dict:
+        return request

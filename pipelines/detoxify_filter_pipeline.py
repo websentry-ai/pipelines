@@ -66,11 +66,11 @@ class Pipeline:
         # This function is called when the valves are updated.
         pass
 
-    async def inlet(self, body: dict, user: Optional[dict] = None) -> dict:
+    async def inlet(self, request: dict, user: Optional[dict] = None) -> dict:
         # This filter is applied to the form data before it is sent to the OpenAI API.
         print(f"inlet:{__name__}")
 
-        print(body)
+        body = request.body
         user_message = body["messages"][-1]["content"]
 
         # Filter out toxic messages

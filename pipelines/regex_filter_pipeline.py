@@ -41,8 +41,9 @@ class Pipeline:
     async def inlet(self, request: dict, user: Optional[dict] = None) -> dict:
         print(f"inlet: {__name__}")
         body = request.body
+        config = request.config
 
-        regex_filters = getattr(request, "regex_filters", [])
+        regex_filters = config.get("regex_filters", [])
         if not regex_filters:
             return body
 

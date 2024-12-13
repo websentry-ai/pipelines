@@ -33,24 +33,19 @@ class Pipeline:
         print(f"inlet: {__name__}")
 
         body = request.body
-        messages = body.get("messages", [])
-        
-        banned_words = getattr(request, "ban_list", [])
+        config = request.config
+
+        banned_words = config.get("ban_list", [])
         if not banned_words:
             return body
 
-        user_message = None
-        for message in reversed(messages):
-            if message.get("role") == "user":
-                user_message = message
-                break
+        message = body.get("text", "")
 
-        if user_message:
-            content = user_message.get("content", "")
-            if not content.strip():
+        if message:
+            if not message.strip():
                 raise Exception("Input message cannot be empty.")
 
-            matches = self.find_banned_words(content, banned_words)
+            matches = self.find_banned_words(message, banned_words)
             if matches:
                 banned_words_found = [match["word"] for match in matches]
                 raise Exception(f"Message contains banned words or similar variations: {', '.join(banned_words_found)}")
@@ -90,6 +85,6 @@ class Pipeline:
                 
         return matches
 
-    async def outlet(self, body: dict, user: Optional[dict] = None) -> dict:
+    async def outlet(self, request: dict, user: Optional[dict] = None) -> dict:
         # No modifications needed for outgoing messages
-        return body
+        return request

@@ -45,9 +45,10 @@ class Pipeline:
     async def on_valves_updated(self):
         pass
 
-    async def inlet(self, body: dict, user: Optional[dict] = None) -> dict:
+    async def inlet(self, request: dict, user: Optional[dict] = None) -> dict:
         print(f"inlet: {__name__}")
 
+        body = request.body
         messages = body.get("messages", [])
 
         # Manually extract the last user message
@@ -71,8 +72,8 @@ class Pipeline:
 
         return body
 
-    async def outlet(self, body: dict, user: Optional[dict] = None) -> dict:
-        return body
+    async def outlet(self, request: dict, user: Optional[dict] = None) -> dict:
+        return request
 
     def validate(self, value: str) -> dict:
         validation_method = self.valves.validation_method.lower()

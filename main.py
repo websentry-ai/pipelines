@@ -785,6 +785,8 @@ async def generate_openai_chat_completion(form_data: OpenAIChatCompletionForm):
 class PerformFiltersRequest(BaseModel):
     enabled_filters: List[str]
     ban_list: Optional[List[str]] = []
+    restrict_to_topic: Optional[List[str]] = []
+    regex_filters: Optional[List[str]] = []
     body: dict
 
 @app.post("/v1/perform_filters")
@@ -797,18 +799,21 @@ async def perform_filters(request: PerformFiltersRequest):
         # Map of filter names to their pipeline IDs
         filter_map = {
             "NSFW Filter": "nsfw_filter_pipeline",
-            "Ban List": "ban_list_pipeline"
+            "Ban List": "ban_list_pipeline",
+            "Restrict to Topic": "restrict_to_topic_pipeline",
+            "Regex Filter": "regex_filter_pipeline",
+            "Jailbreak Filter": "jailbreak_filter_pipeline"
         }
-        
+
         for filter_name in request.enabled_filters:
             if filter_name not in filter_map:
                 continue
                 
             pipeline_id = filter_map[filter_name]
-            
+
             if pipeline_id not in app.state.PIPELINES:
                 continue
-                
+
             pipeline = PIPELINE_MODULES[pipeline_id]
             
             if hasattr(pipeline, "inlet"):

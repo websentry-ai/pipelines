@@ -1,13 +1,3 @@
-"""
-title: Bias Check Pipeline
-author: Your Name
-date: 2024-05-30
-version: 1.0
-license: MIT
-description: A pipeline for detecting bias in messages using the d4data/bias-detection-model.
-requirements: transformers, tensorflow
-"""
-
 from typing import List, Optional
 from pydantic import BaseModel
 from transformers import AutoTokenizer, TFAutoModelForSequenceClassification, pipeline

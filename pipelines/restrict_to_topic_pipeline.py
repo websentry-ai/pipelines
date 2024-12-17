@@ -48,29 +48,36 @@ class Pipeline:
         body = request.body
         config = request.config
 
-        topics = config.get("restrict_to_topic", [])
+        valid_topics = config.get("valid_topics", [])
+        invalid_topics = config.get("invalid_topics", [])
 
-        if not topics:
+        if not valid_topics and not invalid_topics:
             return request
 
         message = body.get("text", "")
 
-        if message:
-            if not message.strip():
-                return request
+        if message and message.strip():
+            matches_valid_topic = True
+            matches_invalid_topic = False
 
-            result = self.classifier(
-                message,
-                candidate_labels=topics,
-                multi_label=True
-            )
-
-            matches_topic = any(score > self.valves.threshold for score in result['scores'])
-
-            if not matches_topic:
-                raise Exception(
-                    "Message is not related to any of the configured topics."
+            if valid_topics:
+                result = self.classifier(
+                    message,
+                    candidate_labels=valid_topics,
+                    multi_label=True
                 )
+                matches_valid_topic = any(score > self.valves.threshold for score in result['scores'])
+
+            if invalid_topics:
+                result = self.classifier(
+                    message,
+                    candidate_labels=invalid_topics,
+                    multi_label=True
+                )
+                matches_invalid_topic = any(score > self.valves.threshold for score in result['scores'])
+
+            if (valid_topics and not matches_valid_topic and not invalid_topics) or matches_invalid_topic:
+                raise Exception("Message contains invalid topics or is not related to any valid topics.")
 
         return request
 

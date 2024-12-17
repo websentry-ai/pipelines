@@ -796,10 +796,10 @@ async def perform_filters(request: PerformFiltersRequest):
     try:
         # Map of filter names to their pipeline IDs
         filter_map = {
-            "NSFW Text": "nsfw_filter_pipeline",
+            "NSFW": "nsfw_filter_pipeline",
             "Ban List": "ban_list_pipeline",
             "Restrict to Topic": "restrict_to_topic_pipeline",
-            "Regex Match": "regex_filter_pipeline",
+            "Regex Pattern Match": "regex_filter_pipeline",
             "Jailbreak Detection": "jailbreak_filter_pipeline",
             "Bias Check": "bias_check_pipeline"
         }

@@ -57,9 +57,9 @@ class Pipeline:
 
             # Manually extract the last user message
             user_message = None
-            for message in reversed(messages):
-                if message.get("role") == "user":
-                    user_message = message
+            for msg in reversed(messages):
+                if msg.get("role") == "user":
+                    user_message = msg
                     break
             
             if user_message:

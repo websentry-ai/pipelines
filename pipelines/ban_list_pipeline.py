@@ -49,7 +49,19 @@ class Pipeline:
         if not banned_words:
             return body
 
-        message = body.get("text", "")
+        if 'text' in body:
+            message = body.get("text", "")
+        else:
+            messages = body.get("messages", [])
+
+            # Manually extract the last user message
+            user_message = None
+            for message in reversed(messages):
+                if message.get("role") == "user":
+                    user_message = message
+                    break
+            
+            message = user_message.get("content", "")
 
         if message:
             if not message.strip():

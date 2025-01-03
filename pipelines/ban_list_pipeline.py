@@ -48,10 +48,11 @@ class Pipeline:
         banned_words = config.get("ban_list", [])
         if not banned_words:
             return body
-
+        
+        message = None
         if 'text' in body:
             message = body.get("text", "")
-        else:
+        elif 'messages' in body:
             messages = body.get("messages", [])
 
             # Manually extract the last user message
@@ -61,7 +62,8 @@ class Pipeline:
                     user_message = message
                     break
             
-            message = user_message.get("content", "")
+            if user_message:
+                message = user_message.get("content", "")
 
         if message:
             if not message.strip():

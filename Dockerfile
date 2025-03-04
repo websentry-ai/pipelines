@@ -33,6 +33,7 @@ RUN if [ "$MINIMUM_BUILD" != "true" ]; then \
             pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu --no-cache-dir; \    
         fi \
     fi
+# Remove the explicit transformers installation
 RUN if [ "$MINIMUM_BUILD" = "true" ]; then \
         uv pip install --system -r requirements-minimum.txt --no-cache-dir; \
     else \
@@ -45,5 +46,6 @@ COPY . .
 # Expose the port
 ENV HOST="0.0.0.0"
 ENV PORT="8080"
+
 
 ENTRYPOINT [ "bash", "start.sh" ]

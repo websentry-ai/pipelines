@@ -33,8 +33,7 @@ RUN if [ "$MINIMUM_BUILD" != "true" ]; then \
             pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu --no-cache-dir; \    
         fi \
     fi
-# Add explicit installation of transformers
-RUN pip3 install --no-cache-dir transformers
+# Remove the explicit transformers installation
 RUN if [ "$MINIMUM_BUILD" = "true" ]; then \
         uv pip install --system -r requirements-minimum.txt --no-cache-dir; \
     else \

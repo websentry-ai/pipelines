@@ -14,4 +14,7 @@ aiohttp==3.9.5
 httpx
 
 transformers
+numpy
+tokenizers
+torch>=1.7.0
 

@@ -47,5 +47,15 @@ COPY . .
 ENV HOST="0.0.0.0"
 ENV PORT="8080"
 
+# Install the missing OpenCV dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libgl1-mesa-glx \
+        libglib2.0-0 \
+        libsm6 \
+        libxext6 \
+        libxrender-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT [ "bash", "start.sh" ]

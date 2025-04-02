@@ -31,6 +31,10 @@ import subprocess
 
 from config import API_KEY, PIPELINES_DIR
 
+from ddtrace import patch_all
+# Initialize ddtrace
+patch_all()
+
 if not os.path.exists(PIPELINES_DIR):
     os.makedirs(PIPELINES_DIR)
 

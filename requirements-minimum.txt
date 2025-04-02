@@ -18,4 +18,5 @@ torch==2.6.0
 transformers==5.0.0
 tokenizers==0.20.0
 
-
+datadog==0.50.2
+ddtrace==2.20.0

@@ -793,10 +793,16 @@ class PerformFiltersRequest(BaseModel):
 
 @app.post("/v1/perform_filters")
 @app.post("/perform_filters")
-async def perform_filters(request: PerformFiltersRequest):
+async def perform_filters(request: PerformFiltersRequest, user: str = Depends(get_current_user)):
     """
     Performs enabled filters on the message body
     """
+    if user != API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid API key",
+        )
+
     try:
         # Map of filter names to their pipeline IDs
         filter_map = {

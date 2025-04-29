@@ -41,7 +41,7 @@ class Pipeline:
         }
 
         default_config: Dict[str, Any] = {
-            "categories": [
+            "document_categories": [
                 "Financial Statements",
                 "Board Meeting Documents",
                 "Customer Communication Documents"
@@ -285,7 +285,7 @@ class Pipeline:
             
             print(f"Document classified as: {classification_result.get('category', 'Unknown')}")
             classification_result = classification_result.get('category', 'Unknown')
-            if classification_result in config.get('categories',[]):
+            if classification_result in config.get('document_categories',[]):
                 raise Exception(f'The Document you uploaded or the prompt you chose falls under {classification_result} category. Please choose a different document or prompt.')
         
         return body

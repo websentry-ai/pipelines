@@ -29,21 +29,21 @@ class Pipeline:
         
         # Categories for classification
         categories: List[str] = [
-            "Financial statements",
-            "Board meeting Documents",
+            "Financial Statements",
+            "Board Meeting Documents",
             "Customer Communication Documents"
         ]
 
         explanation_categories: Dict[str, str] = {
-            "Financial statements": "Internal reports containing detailed financial data (balance sheets, income/cash flow statements, forecasts) and management analysis not yet public; often feature extensive tables and numerical data.",
-            "Board meeting Documents": "Formal records of board discussions, decisions, and action items covering company strategy, governance, and high-level oversight; typically structured as minutes with specific agenda points.",
+            "Financial Statements": "Internal reports containing detailed financial data (balance sheets, income/cash flow statements, forecasts) and management analysis not yet public; often feature extensive tables and numerical data.",
+            "Board Meeting Documents": "Formal records of board discussions, decisions, and action items covering company strategy, governance, and high-level oversight; typically structured as minutes with specific agenda points.",
             "Customer Communication Documents": "Sensitive correspondence with clients/partners (e.g., proposals, contracts, issue reports, strategic discussions) containing specific business, operational, or commercial details."
         }
 
         default_config: Dict[str, Any] = {
             "categories": [
-                "Financial statements",
-                "Board meeting Documents",
+                "Financial Statements",
+                "Board Meeting Documents",
                 "Customer Communication Documents"
             ]
         }

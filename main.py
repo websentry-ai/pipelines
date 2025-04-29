@@ -811,7 +811,8 @@ async def perform_filters(request: PerformFiltersRequest, user: str = Depends(ge
             "Restrict to Topic": "restrict_to_topic_pipeline",
             "Regex Pattern Match": "regex_filter_pipeline",
             "Jailbreak Detection": "jailbreak_filter_pipeline",
-            "Bias Check": "bias_check_pipeline"
+            "Bias Check": "bias_check_pipeline",
+            "Document Classifier": "document_classifier_pipeline"
         }
 
         for filter_name in request.enabled_filters:

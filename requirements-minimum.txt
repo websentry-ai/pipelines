@@ -1,7 +1,7 @@
 fastapi==0.111.0
 uvicorn[standard]==0.22.0
 pydantic==2.7.1
-python-multipart==0.0.9
+python-multipart>=0.0.18
 python-socketio
 grpcio
 
@@ -9,12 +9,12 @@ passlib==1.7.4
 passlib[bcrypt]
 PyJWT[crypto]
 
-requests==2.32.2
-aiohttp==3.9.5
+requests>=2.32.4
+aiohttp>=3.12.14
 httpx
 
 numpy==2.2.3             
-torch==2.6.0      
+torch>=2.8.0      
 transformers==5.0.0
 tokenizers==0.20.0
 

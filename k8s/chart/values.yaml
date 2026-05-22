@@ -32,9 +32,12 @@ externalSecret:
     name: aws-secrets-manager
 
 # Optional service-specific ConfigMap (mounted at /app/conf.json). Disabled by
-# default — pipelines doesn't ship a gateway plugin config.
+# default — pipelines doesn't ship a gateway plugin config. `data` defaults to
+# empty so enabling without supplying data fails loudly rather than mounting
+# a zero-byte conf.json.
 configMap:
   enabled: false
+  data: ""
 
 # Extra annotations injected into pod template metadata. Use to drive
 # rotation without changing image tag — e.g. set kubectl.kubernetes.io/restartedAt
@@ -87,6 +90,7 @@ readinessProbe:
   initialDelaySeconds: 5
   timeoutSeconds: 3
   periodSeconds: 10
+  failureThreshold: 5
 
 livenessProbe:
   httpGet:
@@ -95,6 +99,7 @@ livenessProbe:
   initialDelaySeconds: 15
   timeoutSeconds: 3
   periodSeconds: 10
+  failureThreshold: 5
 
 # Additional env vars injected alongside DD_AGENT_HOST and the ExternalSecret envFrom.
 # Use for non-sensitive per-environment config (e.g. feature flags, internal URLs).

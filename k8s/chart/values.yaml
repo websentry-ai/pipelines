@@ -1,0 +1,106 @@
+# Default values for pipelines.
+# Per-environment overlays (dev/, staging/, prod/) override env-specific bits.
+
+replicaCount: 1
+
+image:
+  repository: ""
+  tag: "dev"
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: nginx
+  host: ""
+  tls: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+
+# All env vars come from a single AWS Secrets Manager secret pulled by ESO.
+# Deployment uses envFrom: secretRef to inject the whole map. Per-env overlay
+# sets remoteKey.
+externalSecret:
+  enabled: false
+  remoteKey: ""
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: aws-secrets-manager
+
+# Optional service-specific ConfigMap (mounted at /app/conf.json). Disabled by
+# default — pipelines doesn't ship a gateway plugin config. `data` defaults to
+# empty so enabling without supplying data fails loudly rather than mounting
+# a zero-byte conf.json.
+configMap:
+  enabled: false
+  data: ""
+
+# Extra annotations injected into pod template metadata. Use to drive
+# rotation without changing image tag — e.g. set kubectl.kubernetes.io/restartedAt
+# to current timestamp from CI/operator. ArgoCD will see the spec change and
+# roll pods. Default empty so chart renders are stable.
+podAnnotations: {}
+
+# Sized for the heavier workload: pipelines loads torch + transformers +
+# opencv models at startup. Underestimate and pods OOM during init.
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+
+# HPA — disabled by default for pipelines dev; enable in per-env overlays
+# once baseline traffic profile is understood.
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 75
+  targetMemoryUtilizationPercentage: 75
+
+# Don't drop capacity during deploys — model load is slow so a fresh pod
+# takes minutes to be Ready.
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# Generous startup probe: model load (torch + transformers + opencv) can take
+# several minutes on cold start. 30 * 10s = 5 min before the kubelet gives up.
+startupProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 10
+  timeoutSeconds: 5
+  periodSeconds: 10
+  failureThreshold: 30
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 5
+  timeoutSeconds: 3
+  periodSeconds: 10
+  failureThreshold: 5
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 15
+  timeoutSeconds: 3
+  periodSeconds: 10
+  failureThreshold: 5
+
+# Additional env vars injected alongside DD_AGENT_HOST and the ExternalSecret envFrom.
+# Use for non-sensitive per-environment config (e.g. feature flags, internal URLs).
+env: []

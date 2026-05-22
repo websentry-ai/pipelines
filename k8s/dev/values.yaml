@@ -1,0 +1,14 @@
+# Dev overlay for pipelines.
+# Pulls runtime env vars from AWS Secrets Manager key dev/pipelines via the
+# aws-secrets-manager ClusterSecretStore (already deployed in dev EKS).
+#
+# Base chart defaults already match dev expectations (image.tag "dev",
+# service.port 8080, ingress disabled, resources sized for ML workload).
+# Overlay carries only what differs from base.
+
+image:
+  repository: 228304386839.dkr.ecr.us-west-2.amazonaws.com/k8s/pipelines
+
+externalSecret:
+  enabled: true
+  remoteKey: dev/pipelines

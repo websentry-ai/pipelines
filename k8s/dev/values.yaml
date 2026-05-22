@@ -1,0 +1,29 @@
+# Dev overlay for pipelines.
+# Pulls runtime env vars from AWS Secrets Manager key dev/pipelines via the
+# aws-secrets-manager ClusterSecretStore (already deployed in dev EKS).
+# HPA disabled in dev pending baseline traffic profile.
+
+image:
+  repository: 228304386839.dkr.ecr.us-west-2.amazonaws.com/k8s/pipelines
+  tag: "dev"
+
+service:
+  port: 8080
+
+ingress:
+  enabled: false
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+
+externalSecret:
+  enabled: true
+  remoteKey: dev/pipelines
+
+configMap:
+  enabled: false

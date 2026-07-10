@@ -1,0 +1,32 @@
+# Production overlay for pipelines. Secret: prod/pipelines (SM JSON object with
+# PIPELINES_API_KEY). PRIVATE service — reached only in-cluster at
+# pipelines-prod:8080 by ai-gateway / ai-gateway-data. NO public ingress, NO DNS.
+
+image:
+  tag: prod
+
+externalSecret:
+  enabled: true
+  remoteKey: prod/pipelines
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: aws-secrets-manager
+
+# PRIVATE backend — no public ingress. It's an arbitrary-code plugin runtime and
+# must never be publicly reachable; callers are in-cluster only.
+ingress:
+  enabled: false
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 2
+
+# Non-secret env. PIPELINES_API_KEY comes from ESO (prod/pipelines).
+env:
+  - name: PORT
+    value: "8080"
+  - name: HOST
+    value: "0.0.0.0"
+  - name: PIPELINES_DIR
+    value: "./pipelines"

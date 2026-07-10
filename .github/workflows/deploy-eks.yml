@@ -45,7 +45,6 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
-  id-token: write
   contents: read
 
 env:
@@ -100,7 +99,15 @@ jobs:
   build-and-deploy:
     needs: resolve
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Generous cap: the image builds torch/transformers/opencv, then waits on
+    # ECR + up to 15m rollout on cold-starting ML pods.
+    timeout-minutes: 60
+    # id-token scoped to THIS job only (least privilege) — the resolve job and
+    # PR runs never receive it, so a PR-branch edit of this workflow can't mint
+    # AWS credentials. The AWS steps are additionally gated on push == 'true'.
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
@@ -189,7 +196,7 @@ jobs:
           # Hard-fail on non-convergence: by this point :prod has already advanced,
           # so a stuck rollout must surface as a FAILED deploy, not a green run
           # with unhealthy pods.
-          if ! kubectl rollout status "deployment/${DEPLOYMENT}" -n "${NAMESPACE}" --timeout=10m; then
+          if ! kubectl rollout status "deployment/${DEPLOYMENT}" -n "${NAMESPACE}" --timeout=15m; then
             echo "::error::rollout did NOT converge in 10m for ${DEPLOYMENT} — failing the deploy (:prod already advanced; investigate)."
             kubectl describe "deployment/${DEPLOYMENT}" -n "${NAMESPACE}" | tail -30 || true
             POD=$(kubectl -n "${NAMESPACE}" get pods -l app="${DEPLOYMENT}" --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}' 2>/dev/null || true)

@@ -36,8 +36,11 @@ ingress:
 # from the secret — never the app's insecure "0p3n-w3bu!" default (config.py).
 # Non-secret config (PORT/HOST/PIPELINES_DIR) lives in the `env:` block below so
 # it's version-controlled. On key collision env: wins over envFrom: secretRef.
+# Default ON so the pod always gets PIPELINES_API_KEY from Secrets Manager —
+# never the app's built-in "0p3n-w3bu!" fallback. remoteKey is required per env
+# (see external-secret.yaml); each overlay sets it (prod/pipelines, dev/pipelines).
 externalSecret:
-  enabled: false
+  enabled: true
   remoteKey: ""
   refreshInterval: 1h
   secretStoreRef:
@@ -67,6 +70,18 @@ resources:
   limits:
     cpu: "2"
     memory: "4Gi"
+
+# Container hardening. NOT runAsNonRoot — the image runs as root and pip-installs
+# / writes to PIPELINES_DIR at runtime, so forcing a non-root uid would break it.
+# But drop all Linux capabilities, block privilege escalation, and pin the
+# default seccomp profile — meaningful defense for a plugin-execution service
+# without breaking its root writes.
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+  seccompProfile:
+    type: RuntimeDefault
 
 autoscaling:
   enabled: true

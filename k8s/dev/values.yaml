@@ -12,3 +12,8 @@ image:
 externalSecret:
   enabled: true
   remoteKey: dev/pipelines
+
+# Dev is held off (see PR #30, replicaCount 0) — keep HPA disabled so it doesn't
+# scale a pod back up. Base default is autoscaling.enabled=true.
+autoscaling:
+  enabled: false

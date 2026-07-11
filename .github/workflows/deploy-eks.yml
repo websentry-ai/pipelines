@@ -197,10 +197,13 @@ jobs:
           # so a stuck rollout must surface as a FAILED deploy, not a green run
           # with unhealthy pods.
           if ! kubectl rollout status "deployment/${DEPLOYMENT}" -n "${NAMESPACE}" --timeout=15m; then
-            echo "::error::rollout did NOT converge in 10m for ${DEPLOYMENT} — failing the deploy (:prod already advanced; investigate)."
+            echo "::error::rollout did NOT converge in 15m for ${DEPLOYMENT} — failing the deploy (:prod already advanced; investigate)."
             kubectl describe "deployment/${DEPLOYMENT}" -n "${NAMESPACE}" | tail -30 || true
-            POD=$(kubectl -n "${NAMESPACE}" get pods -l app="${DEPLOYMENT}" --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[-1].metadata.name}' 2>/dev/null || true)
-            [ -n "$POD" ] && kubectl -n "${NAMESPACE}" logs "$POD" --tail=60 || true
+            # Pod logs are deliberately NOT streamed into the Actions log — this
+            # service processes LLM/guardrail content that may be sensitive.
+            # describe + events + pod status are enough to triage a stuck rollout;
+            # pull logs manually with kubectl if needed.
+            kubectl get events -n "${NAMESPACE}" --sort-by=.lastTimestamp | tail -20 || true
             kubectl get pods -n "${NAMESPACE}" -l app="${DEPLOYMENT}" -o wide || true
             exit 1
           fi

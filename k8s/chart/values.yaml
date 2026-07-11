@@ -42,6 +42,10 @@ ingress:
 externalSecret:
   enabled: true
   remoteKey: ""
+  # Exact SM properties to pull. A missing property fails ESO sync (the pod
+  # won't start) rather than silently letting the app use its default key.
+  secretKeys:
+    - PIPELINES_API_KEY
   refreshInterval: 1h
   secretStoreRef:
     kind: ClusterSecretStore

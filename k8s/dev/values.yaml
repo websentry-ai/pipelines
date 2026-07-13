@@ -12,3 +12,9 @@ image:
 externalSecret:
   enabled: true
   remoteKey: dev/pipelines
+
+# Dev is held off — 0 replicas AND HPA disabled, so neither the base default
+# replicaCount (1) nor the base default HPA scales a pod back up.
+replicaCount: 0
+autoscaling:
+  enabled: false

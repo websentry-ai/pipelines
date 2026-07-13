@@ -1,0 +1,35 @@
+name: Validate Helm chart
+
+# deploy-eks.yml ignores k8s/** (chart changes need no image rebuild), which
+# left chart-only PRs with zero CI. This job runs on exactly those changes so a
+# broken template or values file can't merge unexercised, and provides a check
+# that actually runs (rather than a required deploy check staying pending).
+#
+# helm is preinstalled on GitHub's ubuntu-latest runner image — no setup action.
+
+on:
+  pull_request:
+    paths:
+      - 'k8s/**'
+  # Also on direct pushes to main — deploy-eks.yml ignores k8s/**, so without
+  # this a chart change committed straight to main (not via PR) gets no CI.
+  push:
+    branches: [main]
+    paths:
+      - 'k8s/**'
+
+permissions:
+  contents: read
+
+jobs:
+  helm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Lint + render chart (prod values)
+        run: |
+          helm lint k8s/chart -f k8s/prod/values.yaml
+          # Render as ArgoCD would (release name = Application name).
+          helm template pipelines-prod k8s/chart -f k8s/prod/values.yaml > /dev/null
+          echo "✓ chart lints and renders"

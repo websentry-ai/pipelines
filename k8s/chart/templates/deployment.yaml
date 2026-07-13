@@ -5,6 +5,7 @@ metadata:
   labels:
     app: {{ .Release.Name }}
 spec:
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 3 }}
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
@@ -24,15 +25,12 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}
-          image: "{{ required "image.repository must be set in your values overlay" .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ required "image.repository is required" .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.securityContext }}
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -40,22 +38,11 @@ spec:
           {{- if .Values.externalSecret.enabled }}
           envFrom:
             - secretRef:
-                name: {{ .Release.Name }}-env
+                name: {{ .Release.Name }}-secrets
           {{- end }}
-          env:
-            - name: DD_AGENT_HOST
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.hostIP
           {{- with .Values.env }}
+          env:
             {{- toYaml . | nindent 12 }}
-          {{- end }}
-          {{- if .Values.configMap.enabled }}
-          volumeMounts:
-            - name: config
-              mountPath: /app/conf.json
-              subPath: conf.json
-              readOnly: true
           {{- end }}
           startupProbe:
             {{- toYaml .Values.startupProbe | nindent 12 }}
@@ -65,9 +52,3 @@ spec:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- if .Values.configMap.enabled }}
-      volumes:
-        - name: config
-          configMap:
-            name: {{ .Release.Name }}-config
-      {{- end }}

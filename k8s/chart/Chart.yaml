@@ -1,6 +1,6 @@
 apiVersion: v2
 name: pipelines
-description: Pipelines — guardrail filter service (Open WebUI Pipelines fork)
+description: Open WebUI Pipelines filter service (FastAPI/uvicorn) for the Unbound EKS platform
 type: application
 version: 0.1.0
-appVersion: "1.0.0"
+appVersion: "prod"

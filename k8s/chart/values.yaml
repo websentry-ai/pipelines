@@ -1,17 +1,26 @@
-# Default values for pipelines.
-# Per-environment overlays (dev/, staging/, prod/) override env-specific bits.
+# Default values for the pipelines chart.
+# Per-environment overlays (dev/, prod/) override the env-specific bits.
+#
+# The deployed workload is start.sh -> uvicorn main:app on :8080 (Open WebUI
+# Pipelines fork, FastAPI). STATELESS — no database, no redis, no migrations.
+# Called ONLY in-cluster by ai-gateway / ai-gateway-data at /v1/perform_filters,
+# so it is deployed PRIVATE (ClusterIP, NO ingress). It is an arbitrary-code
+# plugin runtime, so it must never be publicly reachable. Touches no AWS
+# resource at runtime — no IRSA.
 
 replicaCount: 1
 
 image:
-  repository: ""
-  tag: "dev"
+  repository: 228304386839.dkr.ecr.us-west-2.amazonaws.com/k8s/pipelines
+  tag: dev
   pullPolicy: Always
 
 service:
   type: ClusterIP
-  port: 8080
+  port: 8080   # uvicorn --port 8080 (start.sh PORT default)
 
+# PRIVATE service — no public ingress. The template is kept (gated) only so a
+# future internal host could enable it; prod overlay keeps enabled: false.
 ingress:
   enabled: false
   className: nginx
@@ -20,33 +29,44 @@ ingress:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
 
-# All env vars come from a single AWS Secrets Manager secret pulled by ESO.
-# Deployment uses envFrom: secretRef to inject the whole map. Per-env overlay
-# sets remoteKey.
+# Secrets pulled from AWS Secrets Manager by ESO, injected via envFrom:
+# secretRef. The SM value at remoteKey MUST be a JSON object:
+#   { "PIPELINES_API_KEY": "..." }
+# PIPELINES_API_KEY authenticates the /v1/perform_filters caller. It MUST come
+# from the secret — never the app's insecure "0p3n-w3bu!" default (config.py).
+# Non-secret config (PORT/HOST/PIPELINES_DIR) lives in the `env:` block below so
+# it's version-controlled. On key collision env: wins over envFrom: secretRef.
+# Default ON so the pod always gets PIPELINES_API_KEY from Secrets Manager —
+# never the app's built-in "0p3n-w3bu!" fallback. remoteKey is required per env
+# (see external-secret.yaml); each overlay sets it (prod/pipelines, dev/pipelines).
 externalSecret:
-  enabled: false
+  enabled: true
   remoteKey: ""
+  # Exact SM properties to pull. A missing property fails ESO sync (the pod
+  # won't start) rather than silently letting the app use its default key.
+  secretKeys:
+    - PIPELINES_API_KEY
   refreshInterval: 1h
   secretStoreRef:
     kind: ClusterSecretStore
     name: aws-secrets-manager
 
-# Optional service-specific ConfigMap (mounted at /app/conf.json). Disabled by
-# default — pipelines doesn't ship a gateway plugin config. `data` defaults to
-# empty so enabling without supplying data fails loudly rather than mounting
-# a zero-byte conf.json.
-configMap:
-  enabled: false
-  data: ""
+# Non-secret env. PIPELINES_API_KEY comes from ESO. HOST/PORT match start.sh
+# defaults; PIPELINES_DIR is the in-image plugin directory (baked into the
+# image, stateless).
+env:
+  - name: PORT
+    value: "8080"
+  - name: HOST
+    value: "0.0.0.0"
+  - name: PIPELINES_DIR
+    value: "./pipelines"
 
-# Extra annotations injected into pod template metadata. Use to drive
-# rotation without changing image tag — e.g. set kubectl.kubernetes.io/restartedAt
-# to current timestamp from CI/operator. ArgoCD will see the spec change and
-# roll pods. Default empty so chart renders are stable.
 podAnnotations: {}
 
-# Sized for the heavier workload: pipelines loads torch + transformers +
-# opencv models at startup. Underestimate and pods OOM during init.
+# Sized for the workload: the Open WebUI Pipelines image installs torch +
+# transformers + opencv, and modules load at startup. Underestimate and pods
+# OOM during init.
 resources:
   requests:
     cpu: "500m"
@@ -55,25 +75,39 @@ resources:
     cpu: "2"
     memory: "4Gi"
 
-# HPA — disabled by default for pipelines dev; enable in per-env overlays
-# once baseline traffic profile is understood.
+# Container hardening. NOT runAsNonRoot — the image runs as root and pip-installs
+# / writes to PIPELINES_DIR at runtime, so forcing a non-root uid would break it.
+# But drop all Linux capabilities, block privilege escalation, and pin the
+# default seccomp profile — meaningful defense for a plugin-execution service
+# without breaking its root writes.
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+  seccompProfile:
+    type: RuntimeDefault
+
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 1
-  maxReplicas: 5
+  maxReplicas: 2
   targetCPUUtilizationPercentage: 75
   targetMemoryUtilizationPercentage: 75
 
-# Don't drop capacity during deploys — model load is slow so a fresh pod
-# takes minutes to be Ready.
+# Don't drop capacity during deploys — model load is slow, so a fresh pod takes
+# a while to be Ready.
 strategy:
   type: RollingUpdate
   rollingUpdate:
     maxSurge: 1
     maxUnavailable: 0
 
-# Generous startup probe: model load (torch + transformers + opencv) can take
-# several minutes on cold start. 30 * 10s = 5 min before the kubelet gives up.
+revisionHistoryLimit: 3
+
+# Generous startup probe: module load (torch + transformers + opencv) can take
+# minutes on cold start. 30 * 10s = 5 min before the kubelet gives up. Probes
+# hit GET / (get_status → unauthenticated 200 {"status": true}); no authed path
+# is probed.
 startupProbe:
   httpGet:
     path: /
@@ -100,7 +134,3 @@ livenessProbe:
   timeoutSeconds: 3
   periodSeconds: 10
   failureThreshold: 5
-
-# Additional env vars injected alongside DD_AGENT_HOST and the ExternalSecret envFrom.
-# Use for non-sensitive per-environment config (e.g. feature flags, internal URLs).
-env: []

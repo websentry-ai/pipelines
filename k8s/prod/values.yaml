@@ -8,6 +8,24 @@ image:
 externalSecret:
   enabled: true
   remoteKey: prod/pipelines
+  # All secret keys pulled from the prod/pipelines SM JSON. Each is mapped by
+  # remoteRef.property (exact key) — a missing property fails ESO sync so the pod
+  # won't start with a half-populated secret. Overrides the base list (which is
+  # just PIPELINES_API_KEY); Helm replaces the list, not merges.
+  #   PIPELINES_API_KEY        - authenticates the /v1/perform_filters caller
+  #   GOOGLE_*                 - Vertex AI service-account creds for the
+  #                              document_classifier filter (get_access_token)
+  #   API_KEY                  - X-API-KEY the logging_pipeline sends to
+  #                              gateway-data graphql (else the log POST is 401'd)
+  secretKeys:
+    - PIPELINES_API_KEY
+    - GOOGLE_CLIENT_EMAIL
+    - GOOGLE_PRIVATE_KEY
+    - GOOGLE_PRIVATE_KEY_ID
+    - GOOGLE_PROJECT_ID
+    - GOOGLE_REGION
+    - GOOGLE_ENDPOINT_ID
+    - API_KEY
   secretStoreRef:
     kind: ClusterSecretStore
     name: aws-secrets-manager
@@ -22,7 +40,16 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 2
 
-# Non-secret env. PIPELINES_API_KEY comes from ESO (prod/pipelines).
+# Non-secret env. Secret values (PIPELINES_API_KEY, GOOGLE_*, API_KEY) come from
+# ESO (prod/pipelines) via envFrom. The vars below are non-sensitive config /
+# labels — safe in git.
+#   LOG_URL          - where logging_pipeline POSTs prompts. Internal gateway-data
+#                      graphql (matches ai-gateway's own rewrite target). Without
+#                      it the app defaults to localhost:8000 and logging no-ops.
+#   AI_MODEL_NAME    - fallback model label only; body.model wins per request.
+#   FUNCTIONALITY /  - static labels stamped on every logged row. Defaults are
+#   APPLICATION_NAME   "chat" / "chat-ui"; set them here to match Porter if the
+#                      log labels need to stay identical (uncomment + fill).
 env:
   - name: PORT
     value: "8080"
@@ -30,3 +57,11 @@ env:
     value: "0.0.0.0"
   - name: PIPELINES_DIR
     value: "./pipelines"
+  - name: LOG_URL
+    value: "http://gateway-data-prod.prod.svc.cluster.local:8080/graphql/"
+  # - name: AI_MODEL_NAME
+  #   value: ""        # copy Porter's value if not the gpt-4o default
+  # - name: FUNCTIONALITY
+  #   value: ""        # copy Porter's value if not the "chat" default
+  # - name: APPLICATION_NAME
+  #   value: ""        # copy Porter's value if not the "chat-ui" default

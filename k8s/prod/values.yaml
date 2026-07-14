@@ -38,7 +38,7 @@ env:
 # the HPA scale on real load. CPU unchanged (500m/2 from the chart default).
 resources:
   requests:
-    cpu: "500m"
+    cpu: "900m"
     memory: "3Gi"
   limits:
     cpu: "2"

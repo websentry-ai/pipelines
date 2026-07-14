@@ -30,3 +30,16 @@ env:
     value: "0.0.0.0"
   - name: PIPELINES_DIR
     value: "./pipelines"
+
+# Memory raised 1Gi -> 3Gi (limit kept 4Gi). pipelines-prod uses ~1978Mi = 193%
+# of the old 1Gi request, so under node memory pressure the kubelet evicted it
+# repeatedly (27 evicted zombie pods piled up), and its memory-based HPA read
+# ~193%/75% and stayed pinned at max. 3Gi request stops the evictions and lets
+# the HPA scale on real load. CPU unchanged (500m/2 from the chart default).
+resources:
+  requests:
+    cpu: "500m"
+    memory: "3Gi"
+  limits:
+    cpu: "2"
+    memory: "4Gi"

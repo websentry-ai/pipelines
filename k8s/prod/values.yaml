@@ -17,8 +17,16 @@ externalSecret:
 ingress:
   enabled: false
 
+# SLEPT 2026-07 — pipelines has no live entrypoint (the FE flow that adds filter
+# cases for NSFW/hate-speech/etc. is disabled, so enabled_filters is always empty
+# and the service is never meaningfully invoked). Scaled to 0 to save cost. Its
+# in-cluster callers (ai-gateway, gateway-data web+celery) are being disabled in
+# parallel — UNBOUND_PIPELINES_URL removed from their env so they skip the call
+# cleanly (no fail-open timeout). To WAKE: set replicaCount back to 1 (or
+# autoscaling.enabled: true) AND restore UNBOUND_PIPELINES_URL in the consumers.
+replicaCount: 0
 autoscaling:
-  enabled: true
+  enabled: false
   minReplicas: 1
   maxReplicas: 2
 

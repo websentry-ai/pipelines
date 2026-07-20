@@ -6,6 +6,10 @@
 # service.port 8080, ingress disabled, resources sized for ML workload).
 # Overlay carries only what differs from base.
 
+# Held off in dev until health stabilises — service not required to be
+# operational yet. Flip back to 1 (or remove this line) to bring it up.
+replicaCount: 0
+
 image:
   repository: 228304386839.dkr.ecr.us-west-2.amazonaws.com/k8s/pipelines
 

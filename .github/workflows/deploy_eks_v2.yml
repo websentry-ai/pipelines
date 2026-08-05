@@ -327,10 +327,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          build-args: |
-            GIT_SHA=${{ steps.meta.outputs.sha }}
           cache-from: type=gha,scope=pipelines
           cache-to: type=gha,scope=pipelines,mode=max
           provenance: false

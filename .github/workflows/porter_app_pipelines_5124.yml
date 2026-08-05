@@ -2,6 +2,10 @@
     push:
         branches:
             - main
+        paths-ignore:
+            - 'k8s/**'
+            - 'docs/**'
+            - '**.md'
 name: Deploy to pipelines
 jobs:
     porter-deploy:

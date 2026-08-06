@@ -15,8 +15,8 @@ httpx
 
 numpy==2.2.3             
 torch>=2.8.0      
-transformers==5.0.0
+transformers==5.5.0
 tokenizers==0.20.0
 
 datadog==0.50.2
-ddtrace==2.20.0
+ddtrace==4.8.2

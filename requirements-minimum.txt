@@ -15,8 +15,10 @@ httpx
 
 numpy==2.2.3             
 torch>=2.8.0      
-transformers==5.0.0
-tokenizers==0.20.0
+transformers==5.6.2
+# transformers 5.x requires tokenizers>=0.22.0,<=0.23.0; the old 0.20.0 pin made
+# this file unresolvable.
+tokenizers==0.22.2
 
 datadog==0.50.2
-ddtrace==2.20.0
+ddtrace==4.8.2
